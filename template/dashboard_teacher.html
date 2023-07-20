@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>XamTrack</title>
+    {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>
+      var messages = {{ messages | safe }};
+      for (var i=0; i<messages.length; i++) {
+        alert(messages[i]);
+      }
+    </script>
+  {% endif %}
+{% endwith %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/css/vendor.bundle.base.css') }}">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static',  filename='dashboard/assets/images/favicon.png') }}" />
+
+
+</head>
+
+<body>
+    <div class="container-scroller">
+        <!-- partial:partials/_navbar.html -->
+        <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+            <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                <a class="site-logo" href="#">
+			<h2 style="color:#000000b2; font-size:170%">XamTrack</h2>
+		</a>
+            </div>
+
+
+
+            <div class="navbar-menu-wrapper d-flex align-items-stretch">
+                <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="mdi mdi-menu"></span>
+          </button>
+
+                <!-- .logo-img{
+  float: left;
+  margin: auto;
+    height: inherit/* fixed the spacing. */
+}-->
+                <ul class="navbar-nav navbar-nav-right">
+
+
+
+                    <li class="nav-item nav-profile dropdown">
+                        <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
+                            <div class="nav-profile-img">
+                                <img src="{{ url_for('static', filename='dashboard/assets/images/blue-user-icon-32.jpg') }}" alt="image">
+                                <span class="availability-status online"></span>
+                            </div>
+                            <div class="nav-profile-text" id="username1">
+                                {{name}}
+                            </div>
+                        </a>
+                        <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
+                            <a class="dropdown-item" href="{{ url_for('teacher_signout') }}">
+                                <i class="mdi mdi-logout mr-2 text-primary"></i> Signout </a>
+                        </div>
+                </ul>
+                <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+            <span class="mdi mdi-menu"></span>
+          </button>
+            </div>
+        </nav>
+        <!-- partial -->
+        <div class="container-fluid page-body-wrapper">
+            <!-- partial:partials/_sidebar.html -->
+            <nav class="sidebar sidebar-offcanvas" id="sidebar">
+                <ul class="nav">
+
+                    <li class="nav-item nav-profile">
+                        <a href="#" class="nav-link">
+                            <div class="nav-profile-image">
+                                <img src="{{ url_for('static', filename='dashboard/assets/images/blue-user-icon-32.jpg') }}" alt="profile">
+                                <span class="login-status online"></span>
+                                <!--change to offline or busy as needed-->
+                            </div>
+                            <div class="nav-profile-text d-flex flex-column" id="username2">
+                            {{name}}<br>{{email}}
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('teacher_dashboard') }}">
+                            <span style="font-size: 15px;" class="menu-title">Dashboard</span>
+                            <i class="mdi mdi-home menu-icon"></i>
+                        </a>
+                    </li>
+<!--
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <span style="font-size: 15px;" class="menu-title">Invigilate</span>
+                            <i class="mdi mdi-eye menu-icon"></i>
+                        </a>
+                    </li>
+-->
+                     <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('evaluate_test')}}" >
+                            <span style="font-size: 15px;" class="menu-title">Evaluate paper</span>
+                            <i class="mdi mdi-pen menu-icon"></i>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <span style="font-size: 15px;" class="menu-title">Support</span>
+                            <i class="mdi mdi-phone-classic menu-icon"></i>
+                        </a>
+                    </li>
+
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('teacher_signout') }}" >
+                            <span style="font-size: 15px;" class="menu-title">signout</span>
+                            <i class="mdi mdi-logout menu-icon"></i>
+                        </a>
+                    </li>
+
+
+                </ul>
+            </nav>
+
+
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <div class="page-header">
+                        <h3 class="page-title">
+                            <span class="page-title-icon bg-gradient-primary text-white mr-2">
+                  <i class="mdi mdi-book-variant"></i>
+                </span> EXAM</h3>
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-5 grid-margin stretch-card">
+                            <form method="post" id="add_test_form" autocomplete="off">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title ">Define Test</h4>
+                                        <div class="add-items d-flex">
+
+                                            <input autocomplete="false" type="text" class="form-control todo-list-input" placeholder="Test name" name="test_name" readonly onfocus="this.removeAttribute('readonly');">
+                                        </div>
+                                        <div class="add-items d-flex">
+                                            <input type="password" class="form-control todo-list-input" placeholder="Test Password" name="test_pass" readonly onfocus="this.removeAttribute('readonly');">
+                                        </div>
+                                         <div class="add-items d-flex">
+                                            <input type="password" class="form-control todo-list-input" placeholder="Invigilation password" name="invig_pass" readonly onfocus="this.removeAttribute('readonly');">
+                                        </div>
+                                        <button type="submit" class="add btn btn-gradient-primary font-weight-bold" id="add_test">Add Test</button><br>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                    {%for i in range(0, len)%}
+                            <div class="col-md-4 stretch-card grid-margin">
+                             <div class="card bg-gradient-info card-img-holder text-white">
+                                <div class="card-body">
+
+                                        <h3 class="font-weight-normal mb-3">{{test_details[i][1]}}
+                                     </h3>
+                                    <h4 class="mb-5">Test id - exproc{{test_details[i][0]}}</h4>
+                                    <div class="row">
+
+                                            <a href="{{ url_for('remove_test', test_id=test_details[i][0]) }}"><button class="add btn btn-info float-left">Delete</button> </a>
+
+                                            <a href="{{ url_for('test_edit', test_id=test_details[i][0], test_name=test_details[i][1]) }}"><button class="add btn btn-info" style="margin-left:50px">Edit Test</button> </a></div>
+                                  </div>
+                                </div>
+                              </div>
+                        {%endfor%}
+                    </div>
+                </div>
+
+            </div>
+            <!-- main-panel ends -->
+        </div>
+        <!-- page-body-wrapper ends -->
+    </div>
+    <!-- container-scroller -->
+    <!-- plugins:js -->
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="{{ url_for('static', filename='dashboard/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/misc.js') }}"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page -->
+
+    <script src="{{ url_for('static', filename='dashboard/assets/js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/todolist.js') }}"></script>
+    <!-- End custom js for this page -->
+
+</body>
+
+</html>

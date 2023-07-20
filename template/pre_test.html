@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/css/style.css') }}">
+    <style type="text/css" media="all">
+        @import "{{ url_for('static',  filename='text_editor/css/main.css') }}";
+        @import "{{ url_for('static',  filename='text_editor/css/widgEditor.css') }}";
+    </style>
+    <script type="text/javascript" src="{{ url_for('static', filename='face_detection/face-api.min.js') }}"></script>
+   <!-- <script type="text/javascript" src="{{ url_for('static', filename='face_detection/opencv.js') }}"></script> -->
+
+    <style>
+        body {
+      display: flex;
+    }
+        canvas {
+        margin-left: 400px;
+            margin-top: 205px;
+            position: absolute;
+            }
+    </style>
+    <script type="text/javascript" src="{{ url_for('static',  filename='text_editor/scripts/widgEditor.js') }}"></script>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h3 class="page-title">
+                <span class="page-title-icon bg-gradient-primary text-white mr-2">
+                  <i class="mdi mdi-book-variant"></i>
+                </span>Setting up
+            </h3>
+        </div>
+        <div>
+           <div class="col-12 grid-margin stretch-card">
+               <div class="card">
+                  <div class="card-body">
+                      <h3 class="page-title" id="count-down"></h3>
+                      <h3 class="page-title" style="margin-left:300px;" id="div-title">Downloading test environment requirements....</h3> <br>
+                    <video id="video" width="600" height="450" autoplay muted style="margin-left:300px;"></video>
+
+                    <form method="post">
+                          <div id="start-test-button">
+                                <h3 class="page-title" style="margin-left:300px;">A button will appear here once the test requirements have been successfully downloaded. Please ensure FullScreen</h3>
+                          </div>
+                    </form>
+                      <script>
+
+
+    const video = document.getElementById('video')
+
+Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri("{{url_for('static' , filename='face_detection/models')}}"),
+  faceapi.nets.faceLandmark68Net.loadFromUri("{{url_for('static' , filename='face_detection/models')}}"),
+  faceapi.nets.faceRecognitionNet.loadFromUri("{{url_for('static' , filename='face_detection/models')}}"),
+
+]).then(startVideo)
+
+function startVideo() {
+  navigator.getUserMedia = navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia;
+
+ navigator.getUserMedia(
+    { video: {} },
+    stream => video.srcObject = stream,
+    err => console.error(err)
+  )
+}
+var c=0;
+var k=0;
+var countDownDate = new Date("{{date_time}}").getTime();
+video.addEventListener('playing', () => {
+
+  const canvas = faceapi.createCanvasFromMedia(video)
+  document.body.append(canvas)
+  const displaySize = { width: video.width, height: video.height }
+  faceapi.matchDimensions(canvas, displaySize)
+  var id = setInterval(async () => {
+
+    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks()
+    const facesCount = detections.length
+    if(facesCount!=1)
+      {
+                   k++;
+
+                               //if there is no detections
+    }
+
+   else{
+    k=0;
+    const resizedDetections = faceapi.resizeResults(detections, displaySize)
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    faceapi.draw.drawDetections(canvas, resizedDetections)
+    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
+    const numRows = 4;
+    const modelPoints = cv.matFromArray(numRows, 3, cv.CV_64FC1, [
+      0.0,
+      0.0,
+      0.0, // Nose tip
+      0.0,
+      0.0,
+      0.0, // HACK! solvePnP doesn't work with 3 points, so copied the
+      //   first point to make the input 4 points
+      // 0.0, -330.0, -65.0,  // Chin
+      -225.0,
+      170.0,
+      -135.0, // Left eye left corner
+      225.0,
+      170.0,
+      -135.0 // Right eye right corne
+      // -150.0, -150.0, -125.0,  // Left Mouth corner
+      // 150.0, -150.0, -125.0,  // Right mouth corner
+    ]);
+
+    // Camera internals
+  const size = { width: 640, height: 480 };
+  const focalLength = size.width;
+  const center = [size.width / 2, size.height / 2];
+  const cameraMatrix = cv.matFromArray(3, 3, cv.CV_64FC1, [
+    focalLength,
+    0,
+    center[0],
+    0,
+    focalLength,
+    center[1],
+    0,
+    0,
+    1
+  ]);
+  console.log("Camera Matrix:", cameraMatrix.data64F);
+    // Create Matrixes
+    const imagePoints = cv.Mat.zeros(numRows, 2, cv.CV_64FC1);
+    const distCoeffs = cv.Mat.zeros(4, 1, cv.CV_64FC1); // Assuming no lens distortion
+    const rvec = new cv.Mat({ width: 1, height: 3 }, cv.CV_64FC1);
+    const tvec = new cv.Mat({ width: 1, height: 3 }, cv.CV_64FC1);
+    const pointZ = cv.matFromArray(1, 3, cv.CV_64FC1, [0.0, 0.0, 500.0]);
+    const pointY = cv.matFromArray(1, 3, cv.CV_64FC1, [0.0, 500.0, 0.0]);
+    const pointX = cv.matFromArray(1, 3, cv.CV_64FC1, [500.0, 0.0, 0.0]);
+    const noseEndPoint2DZ = new cv.Mat();
+    const nose_end_point2DY = new cv.Mat();
+    const nose_end_point2DX = new cv.Mat();
+    const jaco = new cv.Mat();
+    window.beforeunload = () => {
+      im.delete();
+      imagePoints.delete();
+      distCoeffs.delete();
+      rvec.delete();
+      tvec.delete();
+      pointZ.delete();
+      pointY.delete();
+      pointX.delete();
+      noseEndPoint2DZ.delete();
+      nose_end_point2DY.delete();
+      nose_end_point2DX.delete();
+      jaco.delete();
+    };
+
+    const ns = detections[0]['landmarks']['positions'][33];
+    const le = detections[0]['landmarks']['positions'][45];
+    const re = detections[0]['landmarks']['positions'][36];
+
+      [
+        ns.x,
+        ns.y, // Nose tip
+        ns.x,
+        ns.y, // Nose tip (see HACK! above)
+        // 399, 561, // Chin
+        le.x,
+        le.y, // Left eye left corner
+        re.x,
+        re.y // Right eye right corner
+        // 345, 465, // Left Mouth corner
+        // 453, 469 // Right mouth corner
+      ].map((v, i) => {
+        imagePoints.data64F[i] = v;
+      });
+      tvec.data64F[0] = -100;
+      tvec.data64F[1] = 100;
+      tvec.data64F[2] = 1000;
+           const distToLeftEyeX = Math.abs(le.x - ns.x);
+           const distToRightEyeX = Math.abs(re.x - ns.x);
+      if (distToLeftEyeX < distToRightEyeX) {
+        // looking at left
+        rvec.data64F[0] = -1.0;
+        rvec.data64F[1] = -0.75;
+        rvec.data64F[2] = -3.0;
+      } else {
+        // looking at right
+        rvec.data64F[0] = 1.0;
+        rvec.data64F[1] = -0.75;
+        rvec.data64F[2] = -3.0;
+      }
+
+      const success = cv.solvePnP(
+        modelPoints,
+        imagePoints,
+        cameraMatrix,
+        distCoeffs,
+        rvec,
+        tvec,
+        true
+      );
+      if (!success) {
+        return;
+      }
+
+
+
+
+                                    //if detection is found
+      if(((rvec.data64F[0])/Math.PI)*180 <-62 || ((rvec.data64F[0])/Math.PI)*180 >77)
+      {
+        c++;
+        if(c==7)
+        {
+
+          alert("Stop peeping");
+          c=0;
+
+        }
+      }
+      else
+      c=0;
+
+
+
+
+      // Project a 3D points [0.0, 0.0, 500.0],  [0.0, 500.0, 0.0],
+      //   [500.0, 0.0, 0.0] as z, y, x axis in red, green, blue color
+      cv.projectPoints(
+        pointZ,
+        rvec,
+        tvec,
+        cameraMatrix,
+        distCoeffs,
+        noseEndPoint2DZ,
+        jaco
+      );
+      cv.projectPoints(
+        pointY,
+        rvec,
+        tvec,
+        cameraMatrix,
+        distCoeffs,
+        nose_end_point2DY,
+        jaco
+      );
+      cv.projectPoints(
+        pointX,
+        rvec,
+        tvec,
+        cameraMatrix,
+        distCoeffs,
+        nose_end_point2DX,
+        jaco
+      );
+
+      // let im = cv.imread(document.querySelector("canvas"));
+      // // color the detected eyes and nose to purple
+      // for (var i = 0; i < numRows; i++) {
+      //   cv.circle(
+      //     im,
+      //     {
+      //       x: imagePoints.doublePtr(i, 0)[0]+47,
+      //       y: imagePoints.doublePtr(i, 1)[0]+40
+      //     },
+      //     3,
+      //     [255, 0, 255, 255],
+      //     -1
+      //   );
+      // }
+      // // draw axis
+      // const pNose = { x: imagePoints.data64F[0]+47, y: imagePoints.data64F[1]+40 };
+      // const pZ = {
+      //   x: noseEndPoint2DZ.data64F[0]+47,
+      //   y: noseEndPoint2DZ.data64F[1]+40
+      // };
+      // const p3 = {
+      //   x: nose_end_point2DY.data64F[0]+47,
+      //   y: nose_end_point2DY.data64F[1]+40
+      // };
+      // const p4 = {
+      //   x: nose_end_point2DX.data64F[0]+47,
+      //   y: nose_end_point2DX.data64F[1]+40
+      // };
+      // cv.line(im, pNose, pZ, [255, 0, 0, 255], 2);
+      // cv.line(im, pNose, p3, [0, 255, 0, 255], 2);
+      // cv.line(im, pNose, p4, [0, 0, 255, 255], 2);
+
+      // cv.imshow(document.querySelector("canvas"), im);
+      // im.delete();
+    }
+    if(k>=20)
+    {
+    alert("Be within camera frame..!");
+    k=0;
+    c=0;                      // if continuousely in 15 frames, no detections are found
+    }
+    var now = new Date().getTime();
+        var distance = countDownDate - now;
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+ document.getElementById("count-down").innerHTML = minutes + "min: " + seconds + "sec ";
+        if (distance < 0) {
+    clearInterval(id);
+    document.getElementById("start-test-button").innerHTML=`<button type="submit" class="add btn btn-gradient-info float-center" style="margin-left:300px;">
+                             Start test
+                          </button>`
+  }
+
+    document.getElementById("div-title").innerHTML=`<h3 class="page-title" id="div-title">Successfully downloaded, now you can wait till of start of your test.</h3>`
+
+
+
+  }, 200)
+
+})
+</script>
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+    </div>
+
+
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/misc.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/dashboard.js') }}"></script>
+
+
+</body>
+</html>

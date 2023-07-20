@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>XamTrack</title>
+    {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>
+      var messages = {{ messages | safe }};
+      for (var i=0; i<messages.length; i++) {
+        alert(messages[i]);
+      }
+    </script>
+  {% endif %}
+{% endwith %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/css/vendor.bundle.base.css') }}">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- Layout styles -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/css/style.css') }}">
+    <!-- End layout styles -->
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static',  filename='dashboard/assets/images/favicon.png') }}" />
+
+
+</head>
+
+<body>
+    <div class="container-scroller">
+        <!-- partial:partials/_navbar.html -->
+        <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+            <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                <a class="site-logo" href="#">
+			<h2 style="color:#000000b2; font-size:170%">XamTrack</h2>
+		</a>
+            </div>
+
+
+
+            <div class="navbar-menu-wrapper d-flex align-items-stretch">
+                <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="mdi mdi-menu"></span>
+          </button>
+
+                <!-- .logo-img{
+  float: left;
+  margin: auto;
+    height: inherit/* fixed the spacing. */
+}-->
+                <ul class="navbar-nav navbar-nav-right">
+
+
+
+                 <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student_dashboard') }}">
+                            <span style="font-size: 15px;" class="menu-title">Dashboard</span>
+                            <i class="mdi mdi-home menu-icon"></i>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('view_attempted_test')}}">
+                            <span style="font-size: 15px;" class="menu-title">Your attempted tests</span>
+                            <i class="mdi mdi-clipboard-check menu-icon"></i>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span style="font-size: 15px;" class="menu-title">Support</span>
+                            <i class="mdi mdi-phone-classic menu-icon"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <span style="font-size: 15px;" class="menu-title">Suggestions</span>
+                            <i class="mdi mdi-pen menu-icon"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student_signout') }}">
+                            <span style="font-size: 15px;" class="menu-title">Signout</span>
+                            <i class="mdi mdi-logout menu-icon"></i>
+                        </a>
+                    </li>
+                </ul>
+                <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+            <span class="mdi mdi-menu"></span>
+          </button>
+            </div>
+        </nav>
+        <!-- partial -->
+        <div class="container-fluid page-body-wrapper">
+            <!-- partial:partials/_sidebar.html -->
+            <nav class="sidebar sidebar-offcanvas" id="sidebar">
+                <ul class="nav">
+
+                    <li class="nav-item nav-profile">
+                        <a href="#" class="nav-link">
+                            <div class="nav-profile-image">
+                                <img src="{{ url_for('static', filename='dashboard/assets/images/blue-user-icon-32.jpg') }}" alt="profile">
+                                <span class="login-status online"></span>
+                                <!--change to offline or busy as needed-->
+                            </div>
+                            <div class="nav-profile-text d-flex flex-column" id="username2">
+                            {{name}}<br>{{email}}
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student_dashboard') }}">
+                            <span style="font-size: 15px;" class="menu-title">Dashboard</span>
+                            <i class="mdi mdi-home menu-icon"></i>
+                        </a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <span style="font-size: 15px;" class="menu-title">Support</span>
+                            <i class="mdi mdi-phone-classic menu-icon"></i>
+                        </a>
+                    </li>
+
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student_signout') }}" >
+                            <span style="font-size: 15px;" class="menu-title">signout</span>
+                            <i class="mdi mdi-logout menu-icon"></i>
+                        </a>
+                    </li>
+
+
+                </ul>
+            </nav>
+
+
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <div class="page-header">
+                        <h3 class="page-title">
+                            <span class="page-title-icon bg-gradient-primary text-white mr-2">
+                  <i class="mdi mdi-book-variant"></i>
+                </span>Submissions</h3>
+                    </div>
+                       <div class="col-12 grid-margin stretch-card">
+               <div class="card">
+                  <div class="card-body">
+                      <h3 class="page-title" align="center" style="font-size:150%;" id="div-title">Ans Script</h3> <br><br>
+                      <span class="page-title" style="font-size: 120%">Name: {{data[0]}}<br>
+                      Roll no/USN : {{data[5]}}
+                      </span>
+                      <br>
+                      <br>
+                        <div>
+                            {{data[2] | safe}}
+                        </div>
+                  </div>
+                </div>
+              </div>
+                    </div>
+
+            </div>
+            <!-- main-panel ends -->
+        </div>
+        <!-- page-body-wrapper ends -->
+    </div>
+    <!-- container-scroller -->
+    <!-- plugins:js -->
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="{{ url_for('static', filename='dashboard/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/misc.js') }}"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page -->
+
+    <script src="{{ url_for('static', filename='dashboard/assets/js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/todolist.js') }}"></script>
+    <!-- End custom js for this page -->
+
+</body>
+
+</html>

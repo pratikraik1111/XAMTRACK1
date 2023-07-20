@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/css/style.css') }}">
+
+
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h3 class="page-title">
+                <span class="page-title-icon bg-gradient-primary text-white mr-2">
+                  <i class="mdi mdi-book-variant"></i>
+                </span>Instructions
+            </h3>
+        </div>
+        <div>
+           <div class="col-12 grid-margin stretch-card">
+               <div class="card">
+                  <div class="card-body">
+                      <p id="count-down"></p>
+                      <h3 class="page-title" style="margin-left:300px;" id="div-title">Instructions</h3> <br>
+                    <form method="post">
+                          <div id="start-test-button">
+                                <button type="submit" onclick="return popitup('{{ url_for('test_pre', test_id=test_id,date_time=date_time,test_dur=test_dur)}}')" class="add btn btn-gradient-primary font-weight-bold" id="addProductButton">Enter the secure test environment</button>
+                          </div>
+                    </form>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+    </div>
+
+
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/misc.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/dashboard.js') }}"></script>
+<script>function popitup(url) {
+	newwindow=window.open(url,'name','height=1000,width=2160');
+	if (window.focus) {newwindow.focus()}
+	return false;
+}</script>
+<script>
+        var countDownDate = new Date("{{date_time}}").getTime();
+        var x = setInterval(function() {
+        var now = new Date().getTime();
+        var distance = countDownDate - now;
+       // var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+ document.getElementById("count-down").innerHTML = minutes + "min: " + seconds + "sec ";
+        if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("count-down").innerHTML = "SWITCH TO FULL SCREEN NOW! AND START TEST";
+    //window.location.replace('/test_enter');
+  }
+}, 1000);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+          href="{{ url_for('static', filename='dashboard/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='dashboard/assets/vendors/css/vendor.bundle.base.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='dashboard/assets/css/style.css') }}"
+    />
+    <style type="text/css" media="all">
+      @import "{{ url_for('static',  filename='text_editor/css/main.css') }}";
+        @import "{{ url_for('static',  filename='text_editor/css/widgEditor.css') }}";
+    </style>
+    <script
+      type="text/javascript"
+     src="{{ url_for('static', filename='face_detection/face-api.min.js') }}"
+    ></script>
+    <script>
+      type="text/javascript"
+src="{{ url_for('static', filename='face_detection/opencv.js') }}">
+    ></script>
+
+    <style>
+      body {
+        font-family: Arial;
+      }
+
+      .split {
+        height: 100%;
+        width: 50%;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        overflow-x: hidden;
+        padding-top: 20px;
+      }
+
+      .left {
+        left: 0px;
+      }
+
+      .right {
+        right: 0;
+      }
+
+      .centered {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      }
+
+      .centered img {
+        width: 150px;
+        border-radius: 50%;
+      }
+      canvas {
+        position: absolute;
+      }
+    </style>
+    <div><canvas id="canvas"></canvas></div>
+    <div><canvas id="canvas1"></canvas></div>
+    <div id="label-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
+    <script type="text/javascript">
+      // More API functions here:
+      // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/pose
+
+      // the link to your model provided by Teachable Machine export panel
+
+var c=0;
+var k=0;
+var dt = new Date("{{date_time}}");
+var yr= dt.getFullYear();
+var mnt=dt.getMonth();
+var dat=dt.getDate();
+var timestring= "{{test_dur}}";
+var hr= timestring.slice(0,1);
+var min= timestring.slice(2,4);
+console.log(hr);
+console.log(min);
+var h= parseInt(hr)
+var m= parseInt(min)
+var end_time= new Date("{{date_time}}");
+end_time.setFullYear(yr);
+end_time.setMonth(mnt);
+end_time.setDate(dat);
+end_time.setHours(h + end_time.getHours());
+end_time.setMinutes(m+ end_time.getMinutes());
+var x = setInterval(function() {
+if (!window.screenTop && !window.screenY) {
+    console.log("full screen")
+}
+else
+{
+ window.location.replace('/dashboard_student');
+}
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = end_time - now;
+
+  // Time calculations for days, hours, minutes and seconds
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Display the result in the element with id="demo"
+  document.getElementById("count-down").innerHTML = hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("count-down").innerHTML = "TEST ENDED";
+    window.location.replace('/test_enter');
+  }
+}, 1000);
+
+      const URL = "https://teachablemachine.withgoogle.com/models/1PZivug_q/";
+      let model, webcam, ctx, labelContainer, maxPredictions;
+      let malpractice_count = 0;
+      var arr = new Array();
+      async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // Note: the pose library adds a tmPose object to your window (window.tmPose)
+        model = await tmPose.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // Convenience function to setup a webcam
+        const size = 265;
+        const flip = true; // whether to flip the webcam
+        webcam = new tmPose.Webcam(size, size, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // append/get elements to the DOM
+        const canvas = document.getElementById("canvas");
+        const canvas1 = document.getElementById("canvas1");
+        canvas.width = 259;
+        canvas.height = 265;
+        ctx = canvas.getContext("2d");
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+          // and class labels
+          labelContainer.appendChild(document.createElement("div"));
+        }
+      }
+
+      async function loop(timestamp) {
+        webcam.update(); // update the webcam frame
+        await predict();
+        window.requestAnimationFrame(loop);
+      }
+
+      async function predict() {
+        // Prediction #1: run input through posenet
+        // estimatePose can take in an image, video or canvas html element
+        const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+        // Prediction 2: run input through teachable machine classification model
+        const prediction = await model.predict(posenetOutput);
+
+        if (prediction[1].probability > 0.6) {
+          malpractice_count += 1;
+          if (malpractice_count > 15) {
+            console.log("Cheating");
+
+            let image_data_url = canvas.toDataURL("image/jpeg");
+
+            fetch("{{ url_for('test_appear', test_id=test_id,date_time=date_time,test_dur=test_dur)}}", {
+              method: "POST",
+              headers: { "Content-Type": "application/json",
+                       },
+              body:  JSON.stringify( {
+            'image_data_url' :image_data_url
+        }),
+            }).then((res) => {
+              console.log("Request complete! response:", res);
+            });
+            malpractice_count = 0;
+          }
+        } else {
+          malpractice_count = 0;
+        }
+
+        for (let i = 0; i < maxPredictions; i++) {
+          const classPrediction =
+            prediction[i].className +
+            ": " +
+            prediction[i].probability.toFixed(2);
+          labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+
+        // finally draw the poses
+        drawPose(pose);
+      }
+
+      function drawPose(pose) {
+        if (webcam.canvas) {
+          ctx.drawImage(webcam.canvas, 0, 0);
+          // draw the keypoints and skeleton
+          if (pose) {
+            const minPartConfidence = 0.5;
+            tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+            tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+          }
+        }
+      }
+    </script>
+
+    <script
+      type="text/javascript"
+      src="{{ url_for('static',  filename='text_editor/scripts/widgEditor.js') }}"
+    ></script>
+  </head>
+  <body onload="init()">
+    <video id="video" width="0" height="0" autoplay muted></video>
+    <div class="split left content-wrapper">
+      <div class="page-header">
+        <h3 class="page-title">
+          <span class="page-title-icon bg-gradient-primary text-white mr-2">
+            <i class="mdi mdi-book-variant"></i> </span
+          >Question Paper
+        </h3>
+      </div>
+      <div>
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <div id="test_paper"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split right" id="answer">
+      <div class="page-header">
+        <p id="count-down"></p>
+        <h3 class="page-title" style="margin-left: 10px">
+          <span class="page-title-icon bg-gradient-primary text-white mr-2">
+            <i class="mdi mdi-book-variant"></i> </span
+          >Answer editor
+        </h3>
+      </div>
+      <div>
+        <form method="post" class="forms-sample" id="form">
+          <span class="page-title" style="margin-left: 25px; font-size: 90%"
+            >Roll No./USN
+            <input
+              name="roll_no"
+              style="margin-right: 200px; font-size: 100%" /></span
+          ><br /><br />
+          <fieldset>
+            <textarea
+              id="noise"
+              name="noise"
+              class="widgEditor nothing"
+            ></textarea>
+          </fieldset>
+          <button type="submit" class="add btn btn-gradient-info float-center">
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+    <script>
+      document.getElementById(
+        "test_paper"
+      ).innerHTML = `{{question_paper | safe}} `;
+    </script>
+<script src="{{ url_for('static', filename='dashboard/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="{{ url_for('static', filename='dashboard/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/misc.js') }}"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page -->
+
+    <script src="{{ url_for('static', filename='dashboard/assets/js/dashboard.js') }}"></script>
+  </body>
+</html>

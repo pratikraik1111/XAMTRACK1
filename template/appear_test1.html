@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+     <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dashboard/assets/css/style.css') }}">
+  <style type="text/css" media="all">
+        @import "{{ url_for('static',  filename='text_editor/css/main.css') }}";
+        @import "{{ url_for('static',  filename='text_editor/css/widgEditor.css') }}";
+    </style>
+<script type="text/javascript" src="{{ url_for('static', filename='face_detection/face-api.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='face_detection/opencv.js') }}"></script>
+
+<style>
+body {
+  font-family: Arial;
+
+     }
+
+.split {
+  height: 100%;
+  width: 50%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.left {
+  left: 0px;
+
+}
+
+.right {
+  right: 0;
+}
+
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.centered img {
+  width: 150px;
+  border-radius: 50%;
+}
+canvas {
+      position: absolute;
+    }
+</style>
+
+
+   <script type="text/javascript" src="{{ url_for('static',  filename='text_editor/scripts/widgEditor.js') }}"></script>
+</head>
+<body>
+ <video id="video" width="0" height="0" autoplay muted></video>
+ <script>
+
+    const video = document.getElementById('video')
+
+Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri("{{url_for('static' , filename='face_detection/models')}}"),
+  faceapi.nets.faceLandmark68Net.loadFromUri("{{url_for('static' , filename='face_detection/models')}}"),
+  faceapi.nets.faceRecognitionNet.loadFromUri("{{url_for('static' , filename='face_detection/models')}}"),
+
+]).then(startVideo)
+
+function startVideo() {
+  navigator.getUserMedia = navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia;
+
+ navigator.getUserMedia(
+    { video: {} },
+    stream => video.srcObject = stream,
+    err => console.error(err)
+  )
+}
+var c=0;
+var k=0;
+var dt = new Date("{{date_time}}");
+var yr= dt.getFullYear();
+var mnt=dt.getMonth();
+var dat=dt.getDate();
+var timestring= "{{test_dur}}";
+var hr= timestring.slice(0,1);
+var min= timestring.slice(2,4);
+console.log(hr);
+console.log(min);
+var h= parseInt(hr)
+var m= parseInt(min)
+
+var end_time= new Date("{{date_time}}");
+
+end_time.setFullYear(yr);
+end_time.setMonth(mnt);
+end_time.setDate(dat);
+end_time.setHours(h + end_time.getHours());
+end_time.setMinutes(m+ end_time.getMinutes());
+
+console.log(end_time);
+video.addEventListener('playing', () => {
+  const canvas = faceapi.createCanvasFromMedia(video)
+  document.body.append(canvas)
+  const displaySize = { width: video.width, height: video.height }
+  faceapi.matchDimensions(canvas, displaySize)
+  var id = setInterval(async () => {                   //set_interval starts
+        var now = new Date().getTime();
+        var distance = end_time - now;
+  var hrs = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var secs = Math.floor((distance % (1000 * 60)) / 1000);
+ document.getElementById("count-down").innerHTML = hrs +"hr: "+ mins + "min: " + secs + "sec ";
+        if (distance < 0) {
+    clearInterval(id);
+    document.getElementById("count-down").innerHTML = "TEST ENDED";
+    //window.location.replace('/test_enter');
+  }
+
+       if(!((window.fullScreen) ||
+   (window.innerHeight == screen.height))) {
+      $.post( '/appear_test/exproc{{test_id}}_{{date_time}}_{{test_dur}}', {
+    'noise' : 'this is to test full_screen',
+    'roll_no' : ''
+});
+window.location.replace('/dashboard_student');
+clearInterval(id);
+     }
+
+)
+</script>
+<div class="split left content-wrapper">
+
+
+                    <div class="page-header">
+                        <h3 class="page-title">
+                            <span class="page-title-icon bg-gradient-primary text-white mr-2">
+                  <i class="mdi mdi-book-variant"></i>
+                </span>Question Paper</h3>
+                    </div>
+            <div>
+           <div class="col-12 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+
+
+                    <div id="test_paper">
+
+  </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+
+</div>
+
+<div class="split right" id="answer">
+
+
+                    <div class="page-header">
+                        <p id="count-down"></p>
+                        <h3 class="page-title" style="margin-left: 10px;">
+                            <span class="page-title-icon bg-gradient-primary text-white mr-2">
+                  <i class="mdi mdi-book-variant"></i>
+                </span>Answer editor</h3>
+                    </div>
+                    <div>
+
+
+
+                    <form method="post" class="forms-sample">
+
+                <span class="page-title" style="margin-left:25px; font-size:90%;">Roll No./USN <input name="roll_no" style="margin-right: 200px; font-size:100%;"></span><br><br>
+            <fieldset>
+                <textarea id="noise" name="noise" class="widgEditor nothing"></textarea>
+            </fieldset>
+            <button type="submit" class="add btn btn-gradient-info float-center">
+                Submit
+            </button>
+
+        </form>
+                    </div>
+
+
+</div>
+<script>
+   document.getElementById("test_paper").innerHTML=`{{question_paper | safe}} `
+</script>
+
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <!-- endinject -->
+    <!-- Plugin js for this page -->
+    <script src="{{ url_for('static', filename='dashboard/assets/vendors/chart.js/Chart.min.js') }}"></script>
+    <!-- End plugin js for this page -->
+    <!-- inject:js -->
+    <script src="{{ url_for('static', filename='dashboard/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/hoverable-collapse.js') }}"></script>
+    <script src="{{ url_for('static', filename='dashboard/assets/js/misc.js') }}"></script>
+    <!-- endinject -->
+    <!-- Custom js for this page -->
+
+    <script src="{{ url_for('static', filename='dashboard/assets/js/dashboard.js') }}"></script>
+
+</body>
+</html>
